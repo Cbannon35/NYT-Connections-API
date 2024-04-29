@@ -1,6 +1,13 @@
-from typing import Optional
-
+from typing import Annotated, Optional
+from bson import ObjectId
 from pydantic import BaseModel, Field
+import json
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return super().default(obj)
 
 class Category(BaseModel):
     """
@@ -21,15 +28,20 @@ class Connections(BaseModel):
     Container for a single connections record.
     """
 
-    # The primary key for the StudentModel, stored as a `str` on the instance.
     # This will be aliased to `_id` when sent to MongoDB,
     # but provided as `id` in the API requests and responses.
     id: str = Field(alias="_id", default=None)
+    author: str = Field(...)
     categories: list = [Category]
     class Config:
+        json_encoders = {
+            ObjectId: lambda obj: str(obj)
+        }
+        populate_by_name = True
         schema_extra = {
             "example": {
                 "_id": "YYYY-MM-DD",
+                "author": "Author Name",
                 "categories": [
                     {
                         "category": "category1",
@@ -53,7 +65,7 @@ class Connections(BaseModel):
 
 def ResponseModel(data, message):
     return {
-        "data": [data],
+        "data": data,
         "code": 200,
         "message": message,
     }
