@@ -1,0 +1,28 @@
+name: scrape new connections data
+
+on:
+  schedule:
+    - cron: '20 8 * * *' # This runs at 12:20 AM PST each day.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2 # checkout the repository content
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # install the python version needed
+
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          cd webscraper
+          pip install -r requirements.txt
+
+      - name: scrape web # run main.py
+        env:
+          SOME_SECRET: ${{ secrets.MONGO_DETAILS }}
+        run: python3 webscraper/webscraper.py
