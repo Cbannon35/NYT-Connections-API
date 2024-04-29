@@ -25,4 +25,4 @@ jobs:
       - name: scrape web # run main.py
         env:
           SOME_SECRET: ${{ secrets.MONGO_DETAILS }}
-        run: python3 webscraper.py
+        run: python3 webscraper/webscraper.py
