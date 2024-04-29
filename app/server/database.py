@@ -7,7 +7,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
 database = client.Connections
 
-connections = database.get_collection("test")
+connections = database.get_collection("Connections")
 
 def connections_helper(connection) -> dict:
     return {
