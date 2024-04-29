@@ -2,3 +2,4 @@ fastapi==0.73.0
 uvicorn==0.17.4
 motor==2.5.1
 python-decouple==3.6
+slowapi==0.1.0
