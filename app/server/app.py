@@ -6,11 +6,11 @@ from slowapi.errors import RateLimitExceeded
 # from app.server.routes.connections import router as ConnectionsRouter
 # app.include_router(ConnectionsRouter, tags=["Connections"], prefix="/connections")
 
-from app.server.database import (
+from .database import (
     get_all_connections,
     retrieve_connections,
 )
-from app.server.models.connections import (
+from .models.connections import (
     ErrorResponseModel,
     ResponseModel,
     Category,
