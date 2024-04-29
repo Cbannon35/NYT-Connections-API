@@ -1,13 +1,4 @@
-from typing import Annotated, Optional
-from bson import ObjectId
 from pydantic import BaseModel, Field
-import json
-
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, ObjectId):
-            return str(obj)
-        return super().default(obj)
 
 class Category(BaseModel):
     """
@@ -34,9 +25,6 @@ class Connections(BaseModel):
     author: str = Field(...)
     categories: list = [Category]
     class Config:
-        json_encoders = {
-            ObjectId: lambda obj: str(obj)
-        }
         populate_by_name = True
         schema_extra = {
             "example": {
