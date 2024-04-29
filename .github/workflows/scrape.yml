@@ -1,6 +1,9 @@
-name: manually scrape new connections data
+name: scrape new connections data
 
-on: workflow_dispatch
+on: 
+  schedule:
+      - cron: '20 8 * * *' # This runs at 12:20 AM PST each day.
+  workflow_dispatch:
 
 jobs:
   build:

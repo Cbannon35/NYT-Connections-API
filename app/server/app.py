@@ -51,7 +51,7 @@ async def read_root():
     </html>
     """
 
-@app.get("/connections/", response_description="Connections retrieved")
+@app.get("/connections/", response_description="Daily Connections retrieved")
 @limiter.limit("1/second")
 async def get_daily_connections(request: Request):
     current_date = datetime.now()
