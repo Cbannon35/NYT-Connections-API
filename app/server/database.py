@@ -15,7 +15,7 @@ def connections_helper(connection) -> dict:
         "categories": connection["categories"]
     }
 
-async def get_all_connections():
+async def retrieve_all_connections():
     all_connections   = []
     async for connection in connections.find():
         all_connections.append(connection)
