@@ -12,7 +12,10 @@ connections = database.get_collection("Connections")
 def connections_helper(connection) -> dict:
     return {
         "id": str(connection["_id"]),
-        "categories": connection["categories"]
+        "NYT_id": connection["NYT_id"],
+        "date": connection["date"],
+        "author": connection["author"],
+        "answers": connection["answers"]
     }
 
 async def retrieve_all_connections():
@@ -21,13 +24,13 @@ async def retrieve_all_connections():
         all_connections.append(connection)
     return all_connections
 
-# Retrieve a student with a matching ID
-async def retrieve_connections(date: str) -> dict:
-    connection = await connections.find_one({"_id": date})
+
+async def retrieve_connections_by_id(id: str) -> dict:
+    connection = await connections.find_one({"_id": id})
     if connection:
         return connections_helper(connection)
-
-# async def add_connection(connections_data: dict) -> dict:
-#     connection = await connections.insert_one(connections_data)
-#     new_connection = await connections.find_one({"_id": connection.inserted_id})
-#     return connections_helper(new_connection)
+    
+async def retrieve_connections_by_date(date: str) -> dict:
+    connection = await connections.find_one({"date": date})
+    if connection:
+        return connections_helper(connection)
