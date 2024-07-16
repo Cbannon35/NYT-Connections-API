@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request
+from fastapi import Body, FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, ValidationError, validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -58,27 +59,75 @@ async def read_root():
     </html>
     """
 
+#################################
+#    CONNECTIONS ENDPOINTS      #
+#################################
+
+
 @app.get("/connections/", response_description="Daily Connections retrieved")
 @limiter.limit("1/second")
 async def get_daily_connections(request: Request):
     current_date = datetime.now()
     connection = await retrieve_connections_by_date(current_date.strftime('%Y-%m-%d'))
-    if connection:
-        return ResponseModel(connection, "Data retrieved successfully")
-    return ResponseModel(connection, "Empty list returned")
+    if not connection:
+        return ResponseModel(connection, "Empty list returned")
+    return ResponseModel(connection, "Data retrieved successfully")
 
-# @app.get("/connections/all", response_description="Connections retrieved")
-# @limiter.limit("1/second")
-# async def get_connections(request: Request):
-#     connections = await retrieve_all_connections()
-#     if connections:
-#         return ResponseModel(connections, "Data retrieved successfully")
-#     return ResponseModel(connections, "Empty list returned")
-
-@app.get("/connections/{date}", response_description="Connections retrieved at a specific date")
+@app.get("/{date}", response_description="Connections retrieved at a specific date")
 @limiter.limit("1/second")
 async def get_student_data(date, request: Request):
     connection = await retrieve_connections_by_date(date)
-    if connection:
-        return ResponseModel(connection, "Connections data retrieved successfully from " + date)
-    return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
+    if not connection:
+        return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
+    return ResponseModel(connection, "Connections data retrieved successfully from " + date)
+
+
+#############################
+#    Words ENDPOINT         #
+#############################
+@app.get("/{date}/words", response_description="Just the words of the connections")
+@limiter.limit("1/second")
+async def get_words(date: str, request: Request):
+    connection = await retrieve_connections_by_date(date)
+    if not connection:
+        return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
+    
+    words = []
+    print(connection)
+    for answer in connection["answers"]:
+        words.extend(answer["members"])
+    
+    return ResponseModel(words, "Words retrieved successfully")
+    
+
+#################################
+#    GUESS ENDPOINT             #
+#################################
+class GuessRequest(BaseModel):
+    guess: list[str]
+
+    @validator('guess')
+    def validate_guess_length(cls, v):
+        if len(v) != 4:
+            raise ValueError('Guess must contain exactly 4 strings')
+        return v
+
+@app.post("/{date}/guess", response_description="The level of the guess. -1 if incorrect. 1-4 otherwise.")
+@limiter.limit("1/second")
+async def get_guess(date: str, request: Request, body: GuessRequest = Body(...)):
+    try:
+        validated_guess = body
+    except ValidationError as e:
+        return ErrorResponseModel("An error occurred.", 400, str(e))
+    
+    connection = await retrieve_connections_by_date(date)
+    if not connection:
+        return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
+    
+    for answer in connection["answers"]:
+        if answer["members"] == validated_guess.guess:
+            return ResponseModel(answer["level"], "Guess is correct")
+    
+    return ResponseModel(-1, "Guess is incorrect")
+    
+
