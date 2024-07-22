@@ -52,11 +52,6 @@ async def read_root():
             <h1>Welcome!</h1>
             <h2>NYT Connections API</h2>
             <p>This is an unofficial API for the New York Times Connections game. It scrapes the daily Connections game and stores the data in a MongoDB database.</p>
-            <p>Endpoints:</p>
-            <ul>
-                <li><a href="/connections/">/connections/</a> - Retrieve the connections data for today</li>
-                <li><a href="/connections/2024-04-28">/connections/{date}</a> - Retrieve the connections data for a specific date</li>
-            </ul>
             <p>Documentation:</p>
             <ul>
                 <li><a href="/docs">/docs</a> - FastAPI auto-generated documentation</li>
@@ -136,7 +131,7 @@ async def guess(date: str, request: Request, body: GuessRequest = Body(...)):
         "group": ""
     }
     message = "Guess is incorrect"
-    
+
     validated_guess.guess.sort()
     for answer in connection["answers"]:
         answer["members"].sort()
