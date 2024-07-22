@@ -66,18 +66,18 @@ async def read_root():
 #################################
 
 
-@app.get("/connections/", response_description="Daily Connections retrieved")
+@app.get("/connections/", description="Get today's connections game", response_description="Daily Connections retrieved")
 @limiter.limit("1/second")
-async def get_daily_connections(request: Request):
+async def get_the_daily_connections(request: Request):
     current_date = datetime.now()
     connection = await retrieve_connections_by_date(current_date.strftime('%Y-%m-%d'))
     if not connection:
         return ResponseModel(connection, "Empty list returned")
     return ResponseModel(connection, "Data retrieved successfully")
 
-@app.get("/{date}", response_description="Connections retrieved at a specific date")
+@app.get("/{date}", description="Get a connections game at a specific date", response_description="Connections retrieved at a specific date")
 @limiter.limit("1/second")
-async def get_connections(date, request: Request):
+async def get_connections_by_date(date, request: Request):
     connection = await retrieve_connections_by_date(date)
     if not connection:
         return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
@@ -87,7 +87,7 @@ async def get_connections(date, request: Request):
 #############################
 #    Words ENDPOINT         #
 #############################
-@app.get("/{date}/words", response_description="Just the words of the connections")
+@app.get("/{date}/words", description="Get all 16 words of a connections game at a specific date",response_description="Just the words of the connections")
 @limiter.limit("1/second")
 async def get_words(date: str, request: Request):
     connection = await retrieve_connections_by_date(date)
@@ -114,7 +114,7 @@ class GuessRequest(BaseModel):
             raise ValueError('Guess must contain exactly 4 strings')
         return v
 
-@app.post("/{date}/guess", response_description="The level and group of the guess. -1 if incorrect. 0-3 otherwise.")
+@app.post("/{date}/guess", description="Guess a 4-word category of a connections game at a specific date", response_description="The level and group of the guess. -1 if incorrect. 0-3 otherwise.")
 @limiter.limit("1/second")
 async def guess(date: str, request: Request, body: GuessRequest = Body(...)):
     try:
