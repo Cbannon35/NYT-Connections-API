@@ -22,7 +22,14 @@ from .models.connections import (
 )
 
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI()
+app = FastAPI(
+    title="Connections API",
+    summary="Retrieve data from the New York Times Connections game. Endpoints allow creating a clone of the game.",
+    version="0.0.1",
+    contact={
+        "name": "Christopher Bannon",
+    },
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -75,7 +82,7 @@ async def get_daily_connections(request: Request):
 
 @app.get("/{date}", response_description="Connections retrieved at a specific date")
 @limiter.limit("1/second")
-async def get_student_data(date, request: Request):
+async def get_connections(date, request: Request):
     connection = await retrieve_connections_by_date(date)
     if not connection:
         return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
@@ -112,9 +119,9 @@ class GuessRequest(BaseModel):
             raise ValueError('Guess must contain exactly 4 strings')
         return v
 
-@app.post("/{date}/guess", response_description="The level of the guess. -1 if incorrect. 1-4 otherwise.")
+@app.post("/{date}/guess", response_description="The level and group of the guess. -1 if incorrect. 0-3 otherwise.")
 @limiter.limit("1/second")
-async def get_guess(date: str, request: Request, body: GuessRequest = Body(...)):
+async def guess(date: str, request: Request, body: GuessRequest = Body(...)):
     try:
         validated_guess = body
     except ValidationError as e:
@@ -124,10 +131,21 @@ async def get_guess(date: str, request: Request, body: GuessRequest = Body(...))
     if not connection:
         return ErrorResponseModel("An error occurred.", 404, "Invalid date format or Connections data doesn't exist for that date.")
     
-    for answer in connection["answers"]:
-        if answer["members"] == validated_guess.guess:
-            return ResponseModel(answer["level"], "Guess is correct")
+    response = {
+        "level": -1,
+        "group": ""
+    }
+    message = "Guess is incorrect"
     
-    return ResponseModel(-1, "Guess is incorrect")
+    validated_guess.guess.sort()
+    for answer in connection["answers"]:
+        answer["members"].sort()
+        if answer["members"] == validated_guess.guess:
+            response["level"] = answer["level"]
+            response["group"] = answer["group"]
+            message = "Guess is correct"
+            break
+    
+    return ResponseModel(response, message)
     
 
