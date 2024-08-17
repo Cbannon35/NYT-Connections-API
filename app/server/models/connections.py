@@ -53,7 +53,7 @@ class Connections(BaseModel):
                         "members": ["word1", "word2", "word3", "word4"]
                     },
                     {
-                        "level": 2,
+                        "level": 3,
                         "group": "category4",
                         "members": ["word1", "word2", "word3", "word4"]
                     }
