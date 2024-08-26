@@ -97,7 +97,7 @@ async def get_connections_by_date(date, request: Request):
 #    Words ENDPOINT         #
 #############################
 @app.get("/{date}/words", description="Get all 16 words of a connections game at a specific date",response_description="Just the words of the connections")
-@limiter.limit("1/second")
+@limiter.limit("2/second")
 async def get_words(date: str, request: Request):
     connection = await retrieve_connections_by_date(date)
     if not connection:
@@ -251,10 +251,10 @@ async def hint(date: str, request: Request, body: HintRequest = Body(...)):
         return ResponseModel(f"The words in the group are {', '.join(correct_group)}", "Hint generated successfully")
 
     if prev_hints == 2:
-        return ResponseModel(f"The grouping for level {validated_hint.level} is {group}", "Hint generated successfully")
+        return ResponseModel(f"The grouping for level {validated_hint.level+1} is {group}", "Hint generated successfully")
 
     if prev_hints == 1:
-        return ResponseModel(f"Two of the words in level {validated_hint.level} are {correct_group[0]} and {correct_group[1]}", "Hint generated successfully")
+        return ResponseModel(f"Two of the words in level {validated_hint.level+1} are {correct_group[0]} and {correct_group[1]}", "Hint generated successfully")
 
     sys_prompt = f"These four words ({', '.join(correct_group)}) are connected by the common theme: {group}. Give an extremely short hint or riddle. Trim all extra words, but DO NOT GIVE AWAY THE ANSWER OR USE THE WORDS IN THE GROUP."
     try:
