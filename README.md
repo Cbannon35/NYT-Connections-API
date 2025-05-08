@@ -24,4 +24,4 @@ Format: <code>YYYY-MM-DD</code>
 
 ---
 
-View the live API [here](https://nyt-connections.up.railway.app/)
+~~View the live API [here](https://nyt-connections.up.railway.app/)~~ I ran out of railway credits
